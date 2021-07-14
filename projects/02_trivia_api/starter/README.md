@@ -12,10 +12,10 @@ Errors are returned as JSON objects in the following format:
 ```
 The API will return four error types when requests fail:
 
-400: Bad Request
-404: Resource Not Found
-422: Not Processable
-500: internal server error
+- 400: Bad Request
+- 404: Resource Not Found
+- 422: Not Processable
+- 500: internal server error
 
 ## Endpoints
 Ths section present the documentation of endpoints.  
