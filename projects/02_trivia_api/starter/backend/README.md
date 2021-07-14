@@ -40,35 +40,38 @@ flask run --reload
 
 The `--reload` flag will detect file changes and restart the server automatically.
 
-
-## Endpoints Documentation
+## API Documentation
 
 Ths section present the documentation of endpoints.  
 
-Endpoints
+### Endpoints
+```
 GET '/categories'
 GET '/questions'
 DELETE '/questions/<int:ques_id>'
 POST '/questions'
 POST '/questions/search'
 POST '/quizzes'
+```
 
-GET '/categories'
+### GET '/categories'
 - Fetches a dictionary of categories in which the keys are the ids and the value is the corresponding string of the category
 - Request Arguments: None
 - Returns: An object with a single key, categories, that contains a object of id: category_string key:value pairs. 
+```
 {'1' : "Science",
 '2' : "Art",
 '3' : "Geography",
 '4' : "History",
 '5' : "Entertainment",
 '6' : "Sports"}
+```
 
-
-GET '/questions'
+### GET '/questions'
 - Fetches a list of questions in which the categories are the ids of questions categories.
 - Request Arguments: None
 - Returns: categories and questions objects with totalQuestions which the the count of questions in DB. 
+```
 {
   "categories": [
     3,
@@ -97,56 +100,65 @@ GET '/questions'
   ],
   "totalQuestions": 31
 }
+```
 
-
-DELETE '/questions/<int:ques_id>'
+### DELETE '/questions/<int:ques_id>'
 - Delete a question based on the provided id.
 - Request Arguments: ques_id, witch is the question id
 - Returns: Success status of the request and list of all questions along whith thier count.
+```
 {'success':True, '
 questions':formatted_questions,
 'totalQuestions':len(formatted_questions)}
+```
 
-
-POST '/questions'
+### POST '/questions'
 - Create a new question.
 - Request Body: 
-{"question":"In whtich continent UK is located?",
-   "answer":"Europe",
+```
+{"question":"In whtich continent KSA is located?",
+   "answer":"Asia",
    "category":3,
    "difficulty":1 }
+  ```
 
 - Returns: Success status of the request and list of all questions along whith thier count.
+```
 {'success':True, '
 questions':formatted_questions,
 'totalQuestions':len(formatted_questions)}
+```
 
-
-POST '/categories/<int:category>/questions'
+### POST '/categories/<int:category>/questions'
 - Fetch questions based on category.
 - Request Arguments: category, requested category.
 - Returns: List of questions, count of all questions in that category and the current requested category.
+```
 {'questions':formatted_question,
 'total_questions': len(formatted_question),
  'current_category':category }
+```
 
-
-POST '/questions/search'
+### POST '/questions/search'
 - Fetch all questions that contain search term.
 - Request Body: search term.
+```
 {
-    "searchTerm":"Africa"
+    "searchTerm":"Asia"
 }
+```
 - Returns: List of all questions, count of all questions in that contain search term and current category.
+```
 {'total_questions':len(formatted_serch_result), 
 'questions':formatted_serch_result, 
 'current_category':formatted_serch_result }
-
+```
 
 
 POST '/quizzes'
 - Fetch random question.
 - Request Body: List of asked previous questions and the quiz category.
+```
 {
         "previousQuestions":[
     {
@@ -181,9 +193,8 @@ POST '/quizzes'
   ],
   "showAnswer": false
 }
-
-
 ```
+
 
 
 ## Testing
