@@ -241,17 +241,17 @@ def create_app(test_config=None):
   '''
   @app.errorhandler(400)
   def bad_request(error):
-     return   jsonify({'success':False, 'error':400,'message':'bad request'})
+     return   jsonify({'success':False, 'error':400,'message':'Bad Request'})
 
 
   @app.errorhandler(404)
   def not_found(error):
-     return   jsonify({'success':False, 'error':404,'message':'resource not found'})
+     return   jsonify({'success':False, 'error':404,'message':'Resource Not Found'})
 
 
   @app.errorhandler(422)
   def unprossable_entity(error):
-     return   jsonify({'success':False, 'error':422,'message':'unprossable entity'})
+     return   jsonify({'success':False, 'error':422,'message':'Not Processable'})
 
    
   @app.errorhandler(500)
