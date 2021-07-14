@@ -29,20 +29,18 @@ def create_app(test_config=None):
     Create an endpoint to handle GET requests
     for all available categories.
     '''
-    @app.route('/categories')
-    def get_categories():
-        page = request.args.get('page', 1, type=int)
-        start = (page - 1) * QUESTIONS_PER_PAGE
-        end = start + QUESTIONS_PER_PAGE
-        categories = Category.query.all()
-        # categories=Category.with_entities(Category.type).all()
-        formatted_categories = [category.format() for category in categories]
-        selection = formatted_categories[start:end]
+    def get_category_list():
+        categories = {}
+        for category in Category.query.all():
+            categories[category.id] = category.type
+        return categories
 
-        if (len(selection) == 0):
-            abort(404)
-
-        return jsonify({'categories': selection})
+    @app.route('/categories', methods=['GET'])
+    def get_all_categories():
+        categories = get_category_list()
+        return jsonify({'success': True,
+                        'categories': categories,
+                        'total_categories': len(categories)})
 
     '''
     @[DONE]:
@@ -57,26 +55,26 @@ def create_app(test_config=None):
     three pages.
     Clicking on the page numbers should update the questions.
     '''
-
-    @app.route('/questions')
-    def get_questions():
+    def paginate_questions(request, questions_list):
         page = request.args.get('page', 1, type=int)
         start = (page - 1) * QUESTIONS_PER_PAGE
         end = start + QUESTIONS_PER_PAGE
-        questions = Question.query.all()
-        formatted_questions = [question.format() for question in questions]
-        selection = formatted_questions[start:end]
+        questions = [question.format() for question in questions_list]
+        paginated_questions = questions[start:end]
+        return paginated_questions
 
-        if len(selection) == 0:
+    @app.route('/questions',  methods=['GET'])
+    def get_questions():
+        questions_list = Question.query.all()
+        selection = paginate_questions(request, questions_list)
+        all_questions = len(selection)
+        if all_questions == 0:
             abort(404)
 
-        categories_id = []
-        for c in questions:
-            categories_id.append(c.category)
-
-        return jsonify({'questions': selection,
-                        'totalQuestions': len(formatted_questions),
-                        'categories': categories_id, 'currentCategory': 5})
+        return jsonify({'success': True,
+                        'questions': selection,
+                        'total_questions': all_questions,
+                        'categories': get_category_list()})
 
     '''
     @[DONE]:
@@ -86,21 +84,22 @@ def create_app(test_config=None):
     the question will be removed.
     This removal will persist in the database and when you refresh the page.
     '''
-    @app.route('/questions/<int:ques_id>',  methods=['DELETE'])
-    def delete_question(ques_id):
-        question = Question.query.filter(Question.id == ques_id).one_or_none()
-        if question is None:
-            abort(404)
+    @app.route('/questions/<int:question_id>',  methods=['DELETE'])
+    def delete_question(question_id):
+        try:
+            question = Question.query.filter(
+                                    Question.id == question_id).one_or_none()
+            if question is None:
+                abort(404)
 
-        question.delete()
-        questions = Question.query.order_by(Question.id).all()
-        formatted_questions = [question.format() for question in questions]
+            question.delete()
+            return jsonify({
+                'success': True,
+                'deleted': question_id})
 
-        if len(formatted_questions) == 0:
-            abort(404)
-
-        return jsonify({'success': True, 'questions': formatted_questions,
-                        'totalQuestions': len(formatted_questions)})
+        except Exception:
+            print(sys.exc_info())
+            abort(422)
 
     '''
     @[DONE]:
@@ -115,32 +114,22 @@ def create_app(test_config=None):
     @app.route('/questions',  methods=['POST'])
     @cross_origin()
     def create_question():
-        body = request.get_json(force=True)
-
-        if body is None:
-            abort(422)
-        new_question = body.get('question', None)
-        new_answer = body.get('answer', None)
-        new_category = body.get('category', None)
-        new_difficulty = body.get('difficulty', None)
-
         try:
-            question = Question(question=new_question, answer=new_answer,
-                                difficulty=new_difficulty,
-                                category=new_category)
-            question.insert()
+            request_body = request.get_json()
+            if request_body is None:
+                abort(422)
+            new_question = Question(
+                request_body['question'],
+                request_body['answer'],
+                request_body['category'],
+                request_body['difficulty']
+                )
+            new_question.insert()
+            return jsonify({'success': True})
 
-            selection = Question.query.order_by(Question.id).all()
-            page = request.args.get('page', 1, type=int)
-            start = (page - 1) * QUESTIONS_PER_PAGE
-            end = start + QUESTIONS_PER_PAGE
-            current_question = selection[start:end]
-            formatted_questions = [question.format() for question in
-                                   current_question]
-            return jsonify({'success': True, 'questions': formatted_questions,
-                            'totalQuestions': len(formatted_questions)})
         except Exception:
-            abort(422)
+            print(sys.exc_info())
+            abort(500)
 
     '''
     @[DONE]:
@@ -189,6 +178,7 @@ def create_app(test_config=None):
                 'current_category': None
                 })
         except Exception:
+            print(sys.exc_info())
             abort(404)
 
     '''
@@ -239,16 +229,17 @@ def create_app(test_config=None):
 
     @cross_origin()
     def get_quiz():
-        body = request.get_json()
-        previous_questions = body.get('previousQuestions', None)
-        quiz_category = body.get('quizCategory', None)
+        request_body = request.get_json()
+        if request_body is None:
+            abort(400)
+        previous_questions = request_body.get('previousQuestions')
+        quiz_category = request_body.get('quizCategory')
         question_category = Question.query.filter_by(
                             category=quiz_category).all()
         questions_id = []
         if previous_questions is not None:
             for q in previous_questions:
                 questions_id.append(q.get(id))
-
         print(len(question_category))
 
         while True:
@@ -261,10 +252,10 @@ def create_app(test_config=None):
 
             if (len(question_category) == 0):
                 abort(404)
-        formatted_question = [question.format()]
-        return jsonify({'showAnswer': False, 'currentQuestion':
-                        formatted_question, 'previousQuestions':
-                        previous_questions})
+        final_question = [question.format()]
+        return jsonify({'showAnswer': False,
+                        'currentQuestion': final_question,
+                        'previousQuestions': previous_questions})
     '''
     @[DONE]:
     Create error handlers for all expected errors
