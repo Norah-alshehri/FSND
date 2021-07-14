@@ -30,10 +30,72 @@ class TriviaTestCase(unittest.TestCase):
         pass
 
     """
-    TODO
+    [DONE]
     Write at least one test for each test for successful operation and for expected errors.
     """
+    def test_get_questions(self):
+        res = self.client().get('/questions')
+        data = json.loads(res.data)
 
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['current_category'])
+        self.assertTrue(data['categories'])
+        self.assertTrue(data['question'])
+        self.assertTrue(data['totat_question'])
+        self.assertTrue(len(data['question']))
+
+
+    def test_delete_question(self):
+        res = self.client().delete('/questions/7000')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.data['error'], 404)
+        self.assertEqual(res.data['current_category'], "resource not found")
+        self.assertEqual(data['current_category'], False)
+
+
+    def test_post_question(self):
+        res = self.client().post('/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['question'])
+        self.assertTrue(data['answer'])
+        self.assertTrue(data['category'])
+        self.assertTrue(data['difficulty'])
+
+    
+    def test_post_search_question(self):
+        res = self.client().post('/questions/search')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['current_category'])
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(len(data['question']))
+ 
+    
+    def test_get_category_question(self):
+        res = self.client().get('/categories/4/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['current_category'])
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(len(data['question']))
+
+    
+    def test_post_play_quiz(self):
+        res = self.client().post('/categories/4/questions')
+        data = json.loads(res.data)
+
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(data['current_category'])
+        self.assertTrue(data['questions'])
+        self.assertTrue(data['total_questions'])
+        self.assertTrue(len(data['question']))
 
 # Make the tests conveniently executable
 if __name__ == "__main__":
