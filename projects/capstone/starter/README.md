@@ -1,0 +1,2 @@
+# Udacity Casting Agency Project
+The Casting Agency models a company that is responsible for creating movies and managing and assigning actors to those movies. The system simplify and streamline the process of Executive Producer within the company.
