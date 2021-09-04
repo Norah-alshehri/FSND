@@ -1,26 +1,27 @@
 import os
 from sqlalchemy import Column, String, Integer
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 
-
-DB_HOST = os.getenv('DB_HOST', 'localhost:5432')
-DB_USER = os.getenv('DB_USER', 'norah')
-DB_PASSWORD = os.getenv('DB_PASSWORD', '123456')
-DB_NAME = os.getenv('DB_NAME', 'capstone')
-DB_PATH = 'postgresql://{}:{}@{}/{}'.format(
-                                            DB_USER, DB_PASSWORD, DB_HOST,
-                                            DB_NAME)
+database_path = os.environ['DATABASE_URL']
+if not database_path:
+    database_name = "capstone"
+    database_path = "postgresql://{}:{}@{}/{}".format('norah',
+                                                      '123456',
+                                                      'localhost:5432',
+                                                      database_name)
 
 
 db = SQLAlchemy()
 
 
-def setup_db(app, database_path=DB_PATH):
-    app.config["SQLALCHEMY_DATABASE_URI"] = database_path
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-    app.config["SQLALCHEMY_ECHO"] = True
+
+def setup_db(app, database_path=database_path):
+    app.config.from_object('config')
+    #app.config["SQLALCHEMY_DATABASE_URI"] = database_path
     db.app = app
     db.init_app(app)
+    migrate = Migrate(app, db)
     db.create_all()
     '''
     Movies
